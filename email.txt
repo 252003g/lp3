@@ -1,0 +1,47 @@
+# Import libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# Load dataset
+df = pd.read_csv("emails.csv")
+
+# Display first few rows
+print("First 5 rows:")
+print(df.head())
+
+# Split data into features and target
+X = df['text']        # email text
+y = df['spam']        # 1 = Spam, 0 = Not Spam
+
+# Convert text to numerical features using TF-IDF
+vectorizer = TfidfVectorizer(stop_words='english', max_features=3000)
+X = vectorizer.fit_transform(X)
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# ---------- KNN Model ----------
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+y_pred_knn = knn.predict(X_test)
+
+# ---------- SVM Model ----------
+svm = SVC(kernel='linear')
+svm.fit(X_train, y_train)
+y_pred_svm = svm.predict(X_test)
+
+# ---------- Performance Evaluation ----------
+print("\n--- KNN Model ---")
+print("Accuracy:", round(accuracy_score(y_test, y_pred_knn), 4))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_knn))
+
+print("\n--- SVM Model ---")
+print("Accuracy:", round(accuracy_score(y_test, y_pred_svm), 4))
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred_svm))
+
+# Optional detailed metrics
+print("\nClassification Report (SVM):\n", classification_report(y_test, y_pred_svm))

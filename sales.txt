@@ -1,0 +1,50 @@
+# Import necessary libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+
+# Load the dataset
+df = pd.read_csv("sales_data_sample.csv", encoding='latin1')
+
+# Display first few rows
+print("First 5 rows of dataset:")
+print(df.head())
+
+# Select numeric columns for clustering
+data = df.select_dtypes(include=['int64', 'float64']).copy()
+
+# Handle missing values if any
+data = data.dropna()
+
+# Scale the data
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(data)
+
+# ---------- Elbow Method ----------
+inertia = []
+K = range(1, 11)
+for k in K:
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_data)
+    inertia.append(kmeans.inertia_)
+
+# Plot Elbow graph
+plt.plot(K, inertia, 'bx-')
+plt.xlabel('Number of Clusters (k)')
+plt.ylabel('Inertia')
+plt.title('Elbow Method for Optimal k')
+plt.show()
+
+# ---------- Apply K-Means ----------
+# From elbow plot, suppose best k = 3
+kmeans = KMeans(n_clusters=3, random_state=42)
+df['Cluster'] = kmeans.fit_predict(scaled_data)
+
+# Show cluster assignments
+print("\nClustered Data:")
+print(df[['Cluster']].value_counts())
+
+# Display cluster centers
+print("\nCluster Centers (scaled):")
+print(kmeans.cluster_centers_)
